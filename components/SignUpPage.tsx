@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { User, UserRole, View } from '../types';
 import { COUNTRIES } from '../constants';
 import { LogoIcon } from './IconComponents';
+import { GoogleSignInButton } from './GoogleSignInButton';
+import { MOCK_ARTIST } from '../services/mockApi';
 
 interface SignUpPageProps {
     onSignUp: (newUser: User) => void;
@@ -17,7 +19,7 @@ const TabButton: React.FC<{
         type="button"
         onClick={onClick}
         className={`w-1/2 py-3 text-sm font-semibold transition-colors ${
-            isActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-800'
+            isActive ? 'bg-gray-700/80 text-white' : 'text-gray-400 hover:bg-gray-800/50'
         }`}
     >
         {label}
@@ -26,22 +28,22 @@ const TabButton: React.FC<{
 
 const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, id, ...props }) => (
     <div>
-        <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
         <input
             id={id}
             {...props}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-70 disabled:cursor-not-allowed"
         />
     </div>
 );
 
 const FormSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; children: React.ReactNode }> = ({ label, id, children, ...props }) => (
      <div>
-        <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
         <select
             id={id}
             {...props}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg py-2 px-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
             {children}
         </select>
@@ -55,11 +57,11 @@ const FormCheckbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
                 id={id}
                 type="checkbox"
                 {...props}
-                className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-brand-500 focus:ring-brand-500"
+                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-brand-500 focus:ring-brand-500"
             />
         </div>
         <div className="ml-3 text-sm">
-            <label htmlFor={id} className="font-medium text-gray-300">{label}</label>
+            <label htmlFor={id} className="font-medium text-gray-700 dark:text-gray-300">{label}</label>
         </div>
     </div>
 );
@@ -67,21 +69,26 @@ const FormCheckbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
 
 export const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp, setView }) => {
     const [role, setRole] = useState<UserRole>('artist');
-    // Common fields
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [country, setCountry] = useState(COUNTRIES[0]);
-    // Artist specific
     const [artistName, setArtistName] = useState('');
-    // Producer specific
     const [username, setUsername] = useState('');
     const [ownsRights, setOwnsRights] = useState(false);
     const [hasSamplePermission, setHasSamplePermission] = useState(false);
-    // Agreements
     const [agreedToTerms, setAgreedToTerms] = useState(false);
-
     const [loading, setLoading] = useState(false);
+    const [isGoogleSignUp, setIsGoogleSignUp] = useState(false);
+
+    const handleGoogleSignUp = () => {
+        // Simulate fetching user info from Google
+        setFullName(MOCK_ARTIST.name);
+        setEmail(MOCK_ARTIST.email);
+        setArtistName(MOCK_ARTIST.name); // Pre-fill artist name as well
+        setCountry(MOCK_ARTIST.country || COUNTRIES[0]); // Use country if available
+        setIsGoogleSignUp(true); // Set flag to adjust form
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -93,7 +100,7 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp, setView }) => 
             name: fullName,
             email,
             country,
-            avatarUrl: `https://picsum.photos/seed/${email}/100/100`, // Generate a random avatar
+            avatarUrl: `https://picsum.photos/seed/${email}/100/100`,
             purchasedBeatIds: [],
             favoritedBeatIds: [],
             ratings: {},
@@ -104,68 +111,67 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp, setView }) => 
         if (role === 'artist') {
             newUser = {
                 ...commonData,
-                name: artistName || fullName, // Use stage name if provided
+                name: artistName || fullName,
                 role: 'artist',
             };
-        } else { // Producer
+        } else {
             newUser = {
                 ...commonData,
-                name: username || fullName, // Use username if provided
+                name: username || fullName,
                 role: 'producer',
             };
         }
 
-        // Simulate API call
         setTimeout(() => {
             onSignUp(newUser);
             setLoading(false);
         }, 1000);
     };
 
-    const isArtistFormValid = fullName !== '' && artistName !== '' && email !== '' && password !== '' && agreedToTerms;
-    const isProducerFormValid = fullName !== '' && username !== '' && email !== '' && password !== '' && ownsRights && hasSamplePermission && agreedToTerms;
+    const isArtistFormValid = fullName !== '' && artistName !== '' && email !== '' && (password !== '' || isGoogleSignUp) && agreedToTerms;
+    const isProducerFormValid = fullName !== '' && username !== '' && email !== '' && (password !== '' || isGoogleSignUp) && ownsRights && hasSamplePermission && agreedToTerms;
     const canSubmit = role === 'artist' ? isArtistFormValid : isProducerFormValid;
 
     return (
         <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="w-full max-w-lg space-y-8 bg-gray-900 p-8 rounded-2xl shadow-lg">
+            <div className="w-full max-w-lg space-y-8 bg-white dark:bg-gray-900/50 dark:backdrop-blur-md dark:border dark:border-white/10 p-8 rounded-2xl shadow-lg">
                 <div>
                     <div className="flex justify-center">
                        <LogoIcon className="w-12 h-12" />
                     </div>
-                    <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-white">
+                    <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Create your account
                     </h2>
-                     <p className="mt-2 text-center text-sm text-gray-400">
+                     <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
                         Already a member?{' '}
                         <a onClick={() => setView('login')} className="font-medium text-brand-500 hover:text-brand-600 cursor-pointer">
                            Sign in
                         </a>
                     </p>
                 </div>
-                 <div className="flex bg-gray-800 rounded-lg overflow-hidden">
+                 <div className="flex bg-gray-200 dark:bg-gray-800/50 rounded-lg overflow-hidden">
                     <TabButton label="I'm an Artist" isActive={role === 'artist'} onClick={() => setRole('artist')} />
                     <TabButton label="I'm a Producer" isActive={role === 'producer'} onClick={() => setRole('producer')} />
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     {role === 'artist' ? (
                         <div className="space-y-4">
-                            <FormInput label="Full Name" id="fullName" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                            <FormInput label="Full Name" id="fullName" value={fullName} onChange={e => setFullName(e.target.value)} required disabled={isGoogleSignUp} />
                             <FormInput label="Artist/Stage Name" id="artistName" value={artistName} onChange={e => setArtistName(e.target.value)} placeholder="e.g., Drake" required />
-                            <FormInput label="Email Address" id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                            <FormInput label="Password" id="password-signup" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-                            <FormSelect label="Country of Residence" id="country" value={country} onChange={e => setCountry(e.target.value)}>
+                            <FormInput label="Email Address" id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isGoogleSignUp} />
+                            {!isGoogleSignUp && <FormInput label="Password" id="password-signup-artist" type="password" value={password} onChange={e => setPassword(e.target.value)} required />}
+                            <FormSelect label="Country of Residence" id="country-artist" value={country} onChange={e => setCountry(e.target.value)}>
                                 {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                             </FormSelect>
                             <FormCheckbox label="I agree to the Distribution Agreement & Terms of Service." id="tos-artist" checked={agreedToTerms} onChange={e => setAgreedToTerms(e.target.checked)} required />
                         </div>
                     ) : (
                          <div className="space-y-4">
-                            <FormInput label="Full Name" id="fullName" value={fullName} onChange={e => setFullName(e.target.value)} required />
+                            <FormInput label="Full Name" id="fullName-prod" value={fullName} onChange={e => setFullName(e.target.value)} required disabled={isGoogleSignUp} />
                             <FormInput label="Username" id="username" value={username} onChange={e => setUsername(e.target.value)} placeholder="e.g., MetroBoomin" required />
-                            <FormInput label="Email Address" id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                            <FormInput label="Password" id="password-signup" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-                            <FormSelect label="Country of Residence" id="country" value={country} onChange={e => setCountry(e.target.value)}>
+                            <FormInput label="Email Address" id="email-prod" type="email" value={email} onChange={e => setEmail(e.target.value)} required disabled={isGoogleSignUp} />
+                            {!isGoogleSignUp && <FormInput label="Password" id="password-signup-prod" type="password" value={password} onChange={e => setPassword(e.target.value)} required />}
+                            <FormSelect label="Country of Residence" id="country-prod" value={country} onChange={e => setCountry(e.target.value)}>
                                 {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                             </FormSelect>
                             <div className="space-y-3 pt-2">
@@ -175,11 +181,18 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp, setView }) => 
                             </div>
                         </div>
                     )}
+
+                    {isGoogleSignUp && (
+                        <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+                            Your name and email are from your Google account. Please complete the remaining fields.
+                        </p>
+                    )}
+
                     <div>
                         <button
                             type="submit"
                             disabled={loading || !canSubmit}
-                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-brand-500 py-3 px-4 text-sm font-medium text-white hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-brand-500 py-3 px-4 text-sm font-medium text-white hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-gray-900 disabled:bg-gray-600 disabled:cursor-not-allowed"
                         >
                             {loading && (
                                 <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -191,6 +204,21 @@ export const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp, setView }) => 
                         </button>
                     </div>
                 </form>
+
+                 <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-300 dark:border-gray-700" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                        <span className="bg-white dark:bg-gray-900/50 px-2 text-gray-500 dark:text-gray-400">
+                            Or continue with
+                        </span>
+                    </div>
+                </div>
+
+                <div>
+                    <GoogleSignInButton onClick={handleGoogleSignUp} label="Sign up with Google" />
+                </div>
             </div>
         </div>
     );

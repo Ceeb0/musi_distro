@@ -7,24 +7,41 @@ export interface User {
   phoneNumber?: string;
   avatarUrl?: string;
   country?: string;
-
-  // ✅ Add missing fields
-  role: "artist" | "producer";  // only two roles in your app
-  purchasedBeatIds?: string[];  // list of beats purchased
-  favoritedBeatIds?: string[];  // list of beats favorited
-  ratings?: { [beatId: string]: number }; // beat ratings by this user
+  bio?: string;
+  socialLinks?: {
+    twitter?: string;
+    instagram?: string;
+    spotify?: string;
+    youtube?: string;
+    linkedin?: string;
+  };
+  role: "artist" | "producer";
+  purchasedBeatIds?: string[];
+  favoritedBeatIds?: string[];
+  ratings?: { [beatId: string]: number };
+  // Collaboration fields
+  genres?: string[];
+  availability?: 'Open to Collab' | 'Not Available';
+  lookingFor?: ('Co-producer' | 'Singer' | 'Songwriter' | 'Beatmaker')[];
+  // Contracts field
+  contracts?: Contract[];
 }
 
 export interface Plan {
-  id?: string; // optional, in case you don’t always use it
+  id?: string;
   name: string;
   price: number;
-  priceDescription: string;  // ✅ add this
+  priceDescription: string;
   features: string[];
-  isPopular: boolean;        // ✅ add this
+  isPopular: boolean;
 }
 
-
+export interface Contributor {
+  userId: string;
+  name: string;
+  role: 'Co-producer' | 'Songwriter' | 'Vocalist' | 'Instrumentalist';
+  split: number;
+}
 
 export interface Beat {
   id: string;
@@ -33,6 +50,7 @@ export interface Beat {
   coverArt: string;
   audioUrl: string; // watermarked preview
   price: number;
+  exclusivePrice?: number;
   genre: string;
   mood: string;
   bpm: number;
@@ -41,11 +59,10 @@ export interface Beat {
   isFree?: boolean;
   rating?: number;
   ratingsCount?: number;
+  contributors?: Contributor[];
 }
 
-
-// FIX: Added 'login' and 'signup' to the View type to allow for authentication views.
-export type View = 'marketplace' | 'producerDashboard' | 'artistDashboard' | 'subscription' | 'profileSettings' | 'login' | 'signup';
+export type View = 'marketplace' | 'producerDashboard' | 'artistDashboard' | 'subscription' | 'profileSettings' | 'login' | 'signup' | 'producerProfile' | 'forgotPassword' | 'collaborationHub' | 'earnings';
 
 export interface SalesData {
   month: string;
@@ -58,10 +75,25 @@ export interface Withdrawal {
     method: 'PayPal' | 'Bank Transfer';
     status: 'Completed' | 'Processing' | 'Failed';
     date: string;
-    destination: string; // e.g., p***@email.com or **** 1234
+    destination: string;
 }
 export interface Currency {
     symbol: string;
     code: string;
-    rate: number; // Conversion rate from USD
+    rate: number;
+}
+
+export interface Contract {
+  id: string;
+  beatId: string;
+  beatTitle: string;
+  artistId: string;
+  artistName: string;
+  producerId: string;
+  producerName: string;
+  licenseType: 'Non-Exclusive' | 'Exclusive';
+  price: number;
+  signedDate: string;
+  signature: string;
+  contractText: string;
 }

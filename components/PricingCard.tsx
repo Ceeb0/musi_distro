@@ -10,7 +10,7 @@ interface PricingCardProps {
 }
 
 export const PricingCard: React.FC<PricingCardProps> = ({ plan, isCurrent, onSelect, formatCurrency }) => (
-    <div className={`relative bg-gray-900 rounded-lg p-6 border-2 flex flex-col ${isCurrent ? 'border-brand-500' : 'border-gray-800'} ${plan.isPopular ? 'shadow-lg shadow-brand-500/20' : ''}`}>
+    <div className={`relative bg-gray-900/50 backdrop-blur-md shadow-lg rounded-xl p-6 border-2 flex flex-col ${isCurrent ? 'border-brand-500' : 'border-white/10'} ${plan.isPopular ? 'shadow-brand-500/20' : ''}`}>
         {plan.isPopular && (
             <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
                 <span className="bg-brand-500 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase">Most Popular</span>

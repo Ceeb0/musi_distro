@@ -13,6 +13,7 @@ interface BeatCardProps {
     isFavorited?: boolean;
     onToggleFavorite?: (beatId: string) => void;
     formatCurrency: (priceInUsd: number) => string;
+    onProducerClick?: (producerName: string) => void;
 }
 
 export const BeatCard: React.FC<BeatCardProps> = ({ 
@@ -24,10 +25,11 @@ export const BeatCard: React.FC<BeatCardProps> = ({
     showFavorite = false,
     isFavorited = false,
     onToggleFavorite = () => {},
-    formatCurrency
+    formatCurrency,
+    onProducerClick
 }) => {
     return (
-        <div className="bg-gray-900 rounded-lg overflow-hidden group transition-all duration-300 hover:shadow-lg hover:shadow-brand-500/20">
+        <div className="bg-gray-900/50 backdrop-blur-md border border-white/10 shadow-lg rounded-xl overflow-hidden group transition-all duration-300 hover:shadow-lg hover:shadow-brand-500/20">
             <div className="relative aspect-square">
                 <img src={beat.coverArt} alt={beat.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -42,7 +44,12 @@ export const BeatCard: React.FC<BeatCardProps> = ({
             </div>
             <div className="p-4">
                 <h3 className="text-white font-semibold truncate">{beat.title}</h3>
-                <p className="text-gray-400 text-sm">{beat.producer}</p>
+                <p 
+                    className={`text-gray-400 text-sm truncate ${onProducerClick ? 'cursor-pointer hover:text-white transition-colors' : ''}`}
+                    onClick={onProducerClick ? () => onProducerClick(beat.producer) : undefined}
+                >
+                    {beat.producer}
+                </p>
                 <div className="flex items-center justify-between mt-3">
                      <div className="flex flex-col">
                         {beat.isFree ? (
@@ -61,7 +68,7 @@ export const BeatCard: React.FC<BeatCardProps> = ({
                         {showFavorite && (
                             <button 
                                 onClick={() => onToggleFavorite(beat.id)} 
-                                className={`p-2 bg-gray-800 rounded-full transition-colors ${isFavorited ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                className={`p-2 bg-gray-800/50 rounded-full transition-colors ${isFavorited ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                                 aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
                             >
                                 <HeartIcon className="w-4 h-4" filled={isFavorited} />
@@ -70,13 +77,13 @@ export const BeatCard: React.FC<BeatCardProps> = ({
                         {showPurchase && (
                             <button 
                                 onClick={() => onPurchaseClick(beat)} 
-                                className="p-2 bg-gray-800 rounded-full text-gray-400 hover:bg-brand-500 hover:text-white transition-colors"
+                                className="p-2 bg-gray-800/50 rounded-full text-gray-400 hover:bg-brand-500 hover:text-white transition-colors"
                                 aria-label={beat.isFree ? "Download beat" : "Purchase beat"}
                             >
                                 {beat.isFree ? <DownloadIcon className="w-4 h-4" /> : <CartIcon className="w-4 h-4" />}
                             </button>
                         )}
-                        <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">{beat.bpm} BPM</span>
+                        <span className="text-xs text-gray-500 bg-gray-800/50 px-2 py-1 rounded">{beat.bpm} BPM</span>
                     </div>
                 </div>
             </div>

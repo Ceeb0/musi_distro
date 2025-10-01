@@ -9,10 +9,15 @@ import { SubscriptionPage } from './components/SubscriptionPage';
 import { ProfileSettings } from './components/ProfileSettings';
 import { LoginPage } from './components/LoginPage';
 import { SignUpPage } from './components/SignUpPage';
+import { ForgotPasswordPage } from './components/ForgotPasswordPage';
+import { CollaborationHub } from './components/CollaborationHub';
+import { EarningsDashboard } from './components/EarningsDashboard';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
-import { Beat, User, UserRole, View, Plan, Currency } from './types';
-import { MOCK_ARTIST, MOCK_PRODUCER, fetchBeats } from './services/mockApi';
+import { Beat, User, UserRole, View, Plan, Currency, Contract } from './types';
+import { MOCK_ARTIST, MOCK_PRODUCER, fetchBeats, MOCK_USERS } from './services/mockApi';
 import { plans } from './data/plans';
+import { ProducerProfilePage } from './components/ProducerProfilePage';
+import { generateContractText } from './utils/contractHelper';
 
 const CURRENCY_MAP: { [country: string]: Currency } = {
     'United States': { symbol: '$', code: 'USD', rate: 1 },
@@ -36,13 +41,16 @@ const getCurrencyByCountry = (country: string): Currency => {
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [view, setView] = useState<View>('marketplace');
+  const [viewedProducer, setViewedProducer] = useState<User | null>(null);
   const [allBeats, setAllBeats] = useState<Beat[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loadingBeats, setLoadingBeats] = useState(true);
   const [purchasedBeatIds, setPurchasedBeatIds] = useState<string[]>([]);
   const [favoritedBeatIds, setFavoritedBeatIds] = useState<string[]>([]);
   const [producerPlan, setProducerPlan] = useState<Plan | null>(null);
   const [artistRatings, setArtistRatings] = useState<{ [beatId: string]: number }>({});
   const [currency, setCurrency] = useState<Currency>(getCurrencyByCountry('United States'));
+  const [contracts, setContracts] = useState<Contract[]>([]);
 
   const { 
     currentTrack, 
@@ -56,13 +64,14 @@ const App: React.FC = () => {
   } = useAudioPlayer();
 
   useEffect(() => {
-    const loadBeats = async () => {
+    const loadData = async () => {
         setLoadingBeats(true);
-        const data = await fetchBeats();
-        setAllBeats(data);
+        const beatsData = await fetchBeats();
+        setAllBeats(beatsData);
+        setAllUsers(MOCK_USERS); // Load all mock users
         setLoadingBeats(false);
     };
-    loadBeats();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -70,10 +79,12 @@ const App: React.FC = () => {
         setArtistRatings(currentUser.ratings || {});
         setPurchasedBeatIds(currentUser.purchasedBeatIds || []);
         setFavoritedBeatIds(currentUser.favoritedBeatIds || []);
+        setContracts(currentUser.contracts || []);
     } else {
         setArtistRatings({});
         setPurchasedBeatIds([]);
         setFavoritedBeatIds([]);
+        setContracts([]);
     }
      if (currentUser && currentUser.country) {
         setCurrency(getCurrencyByCountry(currentUser.country));
@@ -105,27 +116,20 @@ const App: React.FC = () => {
   };
 
   const handleLogin = (email: string, role: UserRole): boolean => {
-    // This is a mock login. In a real app, you'd verify credentials against a backend.
-    const userToLogin = role === 'producer' ? MOCK_PRODUCER : MOCK_ARTIST;
-    if (email.toLowerCase() === userToLogin.email.toLowerCase()) {
+    const userToLogin = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (userToLogin) {
       setCurrentUser(userToLogin);
-      setView(role === 'producer' ? 'producerDashboard' : 'artistDashboard');
-      return true;
-    }
-    // Let's also check the other role in case the user selected the wrong one
-    const otherUser = role === 'producer' ? MOCK_ARTIST : MOCK_PRODUCER;
-     if (email.toLowerCase() === otherUser.email.toLowerCase()) {
-      setCurrentUser(otherUser);
-      setView(otherUser.role === 'producer' ? 'producerDashboard' : 'artistDashboard');
+      setView(userToLogin.role === 'producer' ? 'producerDashboard' : 'artistDashboard');
       return true;
     }
     return false;
   };
 
   const handleSignUp = (newUser: User) => {
-    // In a real app, you would send this to your backend to create a user.
-    // We'll just set them as the current user.
     console.log("New user signed up:", newUser);
+    MOCK_USERS.push(newUser); // Add to our mock user base
+    setAllUsers([...MOCK_USERS]);
     setCurrentUser(newUser);
     setView(newUser.role === 'producer' ? 'producerDashboard' : 'artistDashboard');
   };
@@ -135,10 +139,38 @@ const App: React.FC = () => {
     setView('marketplace');
   };
   
-  const handlePurchase = (beat: Beat) => {
+  const handlePurchase = (beat: Beat, licenseType: 'Non-Exclusive' | 'Exclusive', signature: string) => {
+    if (!currentUser || currentUser.role !== 'artist') return;
+
     if (!purchasedBeatIds.includes(beat.id)) {
+        const producer = MOCK_USERS.find(u => u.name === beat.producer);
+        if (!producer) {
+            console.error("Producer not found for this beat");
+            return;
+        }
+
+        const price = licenseType === 'Exclusive' ? beat.exclusivePrice! : beat.price;
+
+        const newContract: Contract = {
+            id: `contract_${Date.now()}`,
+            beatId: beat.id,
+            beatTitle: beat.title,
+            artistId: currentUser.id,
+            artistName: currentUser.name,
+            producerId: producer.id,
+            producerName: producer.name,
+            licenseType,
+            price,
+            signedDate: new Date().toISOString(),
+            signature,
+            contractText: generateContractText(beat, currentUser, producer, licenseType, price, formatCurrency)
+        };
+        
+        setContracts(prev => [...prev, newContract]);
         setPurchasedBeatIds(prev => [...prev, beat.id]);
-        // In a real app, this would also be persisted to the backend.
+        
+        // In a real app, this would be persisted to the backend for both artist and producer.
+        console.log("New Contract created:", newContract);
     }
   }
 
@@ -148,7 +180,6 @@ const App: React.FC = () => {
         ? prev.filter(id => id !== beatId)
         : [...prev, beatId]
     );
-    // In a real app, this would also be persisted to the backend.
   };
 
   const handleRateBeat = (beatId: string, rating: number) => {
@@ -182,17 +213,35 @@ const App: React.FC = () => {
             ...(newAvatarUrl && { avatarUrl: newAvatarUrl })
         };
         setCurrentUser(updatedUser);
-        // This is where you would make an API call in a real app.
+        setAllUsers(prevUsers => prevUsers.map(u => u.id === currentUser.id ? updatedUser : u));
         console.log('User profile updated:', updatedUser);
     }
   };
 
   const handleSetView = (newView: View) => {
-    if (!currentUser && (newView === 'producerDashboard' || newView === 'artistDashboard' || newView === 'profileSettings' || newView === 'subscription')) {
+    if (newView !== 'producerProfile') {
+      setViewedProducer(null);
+    }
+    const protectedViews: View[] = ['producerDashboard', 'artistDashboard', 'profileSettings', 'subscription', 'earnings'];
+    if (!currentUser && (protectedViews.includes(newView) || (newView === 'producerProfile' && !viewedProducer))) {
       setView('login');
     } else {
       setView(newView);
     }
+  };
+
+  const handleViewProducer = (producerName: string) => {
+    const producer = MOCK_USERS.find(u => u.name === producerName && u.role === 'producer');
+    if (producer) {
+      setViewedProducer(producer);
+      setView('producerProfile');
+    } else {
+      console.warn(`Profile for ${producerName} not found.`);
+    }
+  };
+
+  const handleBeatUpload = (newBeat: Beat) => {
+    setAllBeats(prev => [newBeat, ...prev]);
   };
 
   const purchasedBeats = allBeats.filter(beat => purchasedBeatIds.includes(beat.id));
@@ -204,11 +253,15 @@ const App: React.FC = () => {
         return <LoginPage onLogin={handleLogin} setView={handleSetView} />;
       case 'signup':
         return <SignUpPage onSignUp={handleSignUp} setView={handleSetView} />;
+      case 'forgotPassword':
+        return <ForgotPasswordPage setView={handleSetView} />;
       case 'producerDashboard':
-        return <ProducerDashboard setView={handleSetView} currentPlan={producerPlan} formatCurrency={formatCurrency} currency={currency} />;
+        const producerBeatsForDashboard = allBeats.filter(b => b.producer === currentUser?.name);
+        return <ProducerDashboard beats={producerBeatsForDashboard} setView={handleSetView} currentPlan={producerPlan} formatCurrency={formatCurrency} currency={currency} />;
       case 'artistDashboard':
         return <ArtistDashboard 
           purchasedBeats={purchasedBeats} 
+          contracts={contracts}
           artistRatings={artistRatings}
           onRateBeat={handleRateBeat}
           favoritedBeats={favoritedBeats}
@@ -219,11 +272,39 @@ const App: React.FC = () => {
           isPlaying={isPlaying}
           onPurchase={handlePurchase}
           formatCurrency={formatCurrency}
+          onViewProducer={handleViewProducer}
         />;
       case 'subscription':
         return <SubscriptionPage setView={handleSetView} currentPlan={producerPlan} setCurrentPlan={setProducerPlan} formatCurrency={formatCurrency} />;
       case 'profileSettings':
         return currentUser ? <ProfileSettings user={currentUser} onUpdateProfile={handleUpdateProfile} setView={handleSetView} /> : null;
+      case 'producerProfile':
+        const producerToShow = viewedProducer || (currentUser?.role === 'producer' ? currentUser : null);
+        if (!producerToShow) {
+          setView('marketplace');
+          return null; 
+        }
+        const producerBeats = allBeats.filter(beat => beat.producer === producerToShow.name);
+        return <ProducerProfilePage
+            producer={producerToShow}
+            beats={producerBeats}
+            currentUser={currentUser}
+            onUploadBeat={handleBeatUpload}
+            playTrack={playTrack}
+            currentTrack={currentTrack}
+            isPlaying={isPlaying}
+            onPurchase={handlePurchase}
+            isArtist={currentUser?.role === 'artist'}
+            favoritedBeatIds={favoritedBeatIds}
+            onToggleFavorite={handleToggleFavorite}
+            formatCurrency={formatCurrency}
+            setView={handleSetView}
+            onViewProducer={handleViewProducer}
+        />;
+      case 'collaborationHub':
+        return <CollaborationHub allUsers={allUsers} onViewProfile={handleViewProducer} />;
+      case 'earnings':
+        return currentUser ? <EarningsDashboard currentUser={currentUser} allBeats={allBeats} formatCurrency={formatCurrency} /> : null;
       case 'marketplace':
       default:
         return <Marketplace 
@@ -235,15 +316,15 @@ const App: React.FC = () => {
             onPurchase={handlePurchase}
             isArtist={currentUser?.role === 'artist'}
             favoritedBeatIds={favoritedBeatIds}
-// FIX: Changed onToggleFavorite to handleToggleFavorite
             onToggleFavorite={handleToggleFavorite}
+            onViewProducer={handleViewProducer}
             formatCurrency={formatCurrency}
         />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-200 font-sans flex flex-col">
+    <div className="min-h-screen bg-gray-50 text-gray-800 dark:bg-gray-950 dark:text-gray-200 font-sans flex flex-col">
       <Header 
         user={currentUser} 
         onLogout={handleLogout}

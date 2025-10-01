@@ -36,25 +36,25 @@ const CardPaymentForm: React.FC = () => (
         <div>
             <label htmlFor="card-number-sub" className="block text-sm font-medium text-gray-300 mb-1">Card Number</label>
             <div className="relative">
-                <input type="text" id="card-number-sub" className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-10 pr-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="0000 0000 0000 0000" defaultValue="4242 4242 4242 4242" />
+                <input type="text" id="card-number-sub" className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-2 pl-10 pr-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="0000 0000 0000 0000" defaultValue="4242 4242 4242 4242" />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500"><CreditCardIcon /></div>
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
             <div>
                 <label htmlFor="expiry-sub" className="block text-sm font-medium text-gray-300 mb-1">Expiry Date</label>
-                <input type="text" id="expiry-sub" className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="MM / YY" defaultValue="12 / 28" />
+                <input type="text" id="expiry-sub" className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="MM / YY" defaultValue="12 / 28" />
             </div>
             <div>
                 <label htmlFor="cvc-sub" className="block text-sm font-medium text-gray-300 mb-1">CVC</label>
-                <input type="text" id="cvc-sub" className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="123" defaultValue="123" />
+                <input type="text" id="cvc-sub" className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="123" defaultValue="123" />
             </div>
         </div>
     </div>
 );
 
 const TransferPaymentDetails: React.FC<{ plan: Plan; formatCurrency: (price: number) => string; }> = ({ plan, formatCurrency }) => (
-    <div className="bg-gray-800 p-4 rounded-lg text-sm">
+    <div className="bg-gray-800/50 p-4 rounded-lg text-sm">
         <p className="text-gray-300 mb-3">Please transfer {formatCurrency(plan.price)}/{plan.priceDescription} to the following bank account:</p>
         <div className="space-y-2 text-white">
             <div className="flex justify-between"><span className="text-gray-400">Bank Name:</span> <span>Producer Payments Inc.</span></div>
@@ -74,7 +74,7 @@ const BitcoinPaymentDetails: React.FC<{ plan: Plan }> = ({ plan }) => {
     return (
         <div className="text-center">
             <p className="text-gray-300 mb-3 text-sm">Send the exact amount for your {plan.name} plan to the Bitcoin address below.</p>
-            <div className="bg-gray-800 p-4 rounded-lg">
+            <div className="bg-gray-800/50 p-4 rounded-lg">
                 <img src={qrCodeUrl} alt="Bitcoin QR Code" className="mx-auto mb-3 rounded-md bg-white p-1" />
                 <p className="text-white font-mono break-all text-xs">{btcAddress}</p>
             </div>
@@ -114,7 +114,7 @@ const PostPaymentScreen: React.FC<{
             <div className="flex flex-col sm:flex-row gap-3">
                 <button
                     onClick={onViewReceipt}
-                    className="w-full px-4 py-3 text-sm font-medium text-white bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+                    className="w-full px-4 py-3 text-sm font-medium text-white bg-gray-700/80 rounded-md hover:bg-gray-600/80 transition-colors"
                 >
                     View Receipt
                 </button>
@@ -168,13 +168,13 @@ const ReceiptView: React.FC<{
                 <h2 className="text-2xl font-bold text-white">Receipt</h2>
                 <p className="text-sm text-gray-500">{receiptId}</p>
             </div>
-            <div className="bg-gray-800 p-4 rounded-lg space-y-3 text-sm mb-6">
+            <div className="bg-gray-800/50 p-4 rounded-lg space-y-3 text-sm mb-6">
                 <div className="flex justify-between"><span className="text-gray-400">Date:</span> <span className="text-white">{new Date().toLocaleDateString()}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Billed To:</span> <span className="text-white">{user.name}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Payment Method:</span> <span className="text-white capitalize">{paymentMethod}</span></div>
                 <div className="flex justify-between"><span className="text-gray-400">Status:</span> <span className={`font-semibold ${status === 'Completed' ? 'text-green-400' : 'text-yellow-400'}`}>{status}</span></div>
             </div>
-            <div className="border-t border-b border-gray-800 py-4 mb-4">
+            <div className="border-t border-b border-white/10 py-4 mb-4">
                  <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-300">{plan.name} Plan Subscription</span>
                     <span className="text-white font-medium">{formatCurrency(plan.price)}<span className="text-xs">/{plan.priceDescription}</span></span>
@@ -185,7 +185,7 @@ const ReceiptView: React.FC<{
                 <span className="text-brand-500">{formatCurrency(plan.price)}</span>
             </div>
              <div className="flex flex-col sm:flex-row gap-3 mt-8">
-                <button onClick={onBack} className="w-full px-4 py-3 text-sm font-medium text-white bg-gray-700 rounded-md hover:bg-gray-600 transition-colors">
+                <button onClick={onBack} className="w-full px-4 py-3 text-sm font-medium text-white bg-gray-700/80 rounded-md hover:bg-gray-600/80 transition-colors">
                     Back
                 </button>
                 <button onClick={handleShare} className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-sm font-medium text-white bg-brand-500 rounded-md hover:bg-brand-600 transition-colors">
@@ -248,7 +248,7 @@ export const SubscriptionPaymentModal: React.FC<SubscriptionPaymentModalProps> =
                             <p className="text-gray-400 text-sm">Billed monthly. Cancel anytime.</p>
                         </div>
                         
-                        <div className="border-b border-gray-800 mb-6">
+                        <div className="border-b border-white/10 mb-6">
                             <div className="flex">
                                 <PaymentMethodButton label="Card" icon={<CreditCardIcon />} isActive={paymentMethod === 'card'} onClick={() => setPaymentMethod('card')} />
                                 <PaymentMethodButton label="Transfer" icon={<BankIcon />} isActive={paymentMethod === 'transfer'} onClick={() => setPaymentMethod('transfer')} />
@@ -274,8 +274,8 @@ export const SubscriptionPaymentModal: React.FC<SubscriptionPaymentModalProps> =
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={handleClose} role="dialog" aria-modal="true">
-            <div className="bg-gray-900 rounded-lg shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-800">
+            <div className="bg-gray-900/50 backdrop-blur-md border border-white/10 rounded-xl shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-5 border-b border-white/10">
                     <h2 className="text-lg font-bold text-white">
                          {view === 'form' ? `Subscribe to ${plan.name}` : view === 'receipt' ? 'Subscription Receipt' : 'Subscription Status'}
                     </h2>

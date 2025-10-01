@@ -47,7 +47,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             aria-labelledby="dialog-title"
         >
             <div 
-                className="bg-gray-900 rounded-lg shadow-xl w-full max-w-md" 
+                className="bg-gray-900/50 backdrop-blur-md border border-white/10 rounded-xl shadow-xl w-full max-w-md" 
                 onClick={e => e.stopPropagation()}
             >
                 <div className="p-6">
@@ -60,7 +60,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                     <button 
                         type="button" 
                         onClick={onClose} 
-                        className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"
+                        className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700/80 rounded-md hover:bg-gray-600/80 transition-colors"
                     >
                         {cancelText}
                     </button>

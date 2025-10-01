@@ -1,4 +1,5 @@
 
+
 import React, { useState } from "react";
 import { Plan } from "../types";
 import { plans } from "../data/plans";
@@ -48,7 +49,7 @@ export const SubscriptionPage: React.FC<SubscriptionPageProps> = ({
     <>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-extrabold text-white sm:text-5xl">
+                <h1 className="text-4xl font-extrabold text-adaptive-white sm:text-5xl">
                     Find the perfect plan
                 </h1>
                 <p className="mt-4 text-xl text-gray-400">

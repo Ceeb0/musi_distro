@@ -92,8 +92,8 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({ isOpen, onClose, onC
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={handleClose} role="dialog" aria-modal="true">
-            <div className="bg-gray-900 rounded-lg shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center p-5 border-b border-gray-800">
+            <div className="bg-gray-900/50 backdrop-blur-md border border-white/10 rounded-xl shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-5 border-b border-white/10">
                     <h2 className="text-lg font-bold text-white">
                         {view === 'form' ? 'Request Withdrawal' : 'Request Submitted'}
                     </h2>
@@ -116,12 +116,12 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({ isOpen, onClose, onC
                     </div>
                 ) : (
                     <div className="p-6">
-                        <div className="bg-gray-800 p-4 rounded-lg text-center mb-6">
+                        <div className="bg-gray-800/50 p-4 rounded-lg text-center mb-6">
                             <p className="text-sm text-gray-400">Withdrawable Balance</p>
                             <p className="text-3xl font-bold text-white">{formatCurrency(currentBalance)}</p>
                         </div>
                         
-                        <div className="border-b border-gray-800 mb-6">
+                        <div className="border-b border-white/10 mb-6">
                             <div className="flex">
                                 <PaymentMethodButton label="PayPal" icon={<PaypalIcon />} isActive={method === 'PayPal'} onClick={() => { setMethod('PayPal'); setDestination(''); }} />
                                 <PaymentMethodButton label="Bank Transfer" icon={<BankIcon />} isActive={method === 'Bank Transfer'} onClick={() => { setMethod('Bank Transfer'); setDestination(''); }} />
@@ -138,7 +138,7 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({ isOpen, onClose, onC
                                         id="amount" 
                                         value={amount}
                                         onChange={handleAmountChange}
-                                        className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-7 pr-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-2 pl-7 pr-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" 
                                         placeholder="0.00" 
                                     />
                                 </div>
@@ -152,7 +152,7 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({ isOpen, onClose, onC
                                     id="destination" 
                                     value={destination}
                                     onChange={(e) => setDestination(e.target.value)}
-                                    className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" 
+                                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500" 
                                     placeholder={method === 'PayPal' ? 'your.email@example.com' : '1234567890'}
                                 />
                             </div>

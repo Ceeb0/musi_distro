@@ -15,7 +15,7 @@ const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label:
         <input
             id={id}
             {...props}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-2 px-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
     </div>
 );
@@ -26,7 +26,7 @@ const FormSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { lab
         <select
             id={id}
             {...props}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full bg-gray-800/50 border border-gray-700 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
             {children}
         </select>
@@ -35,8 +35,8 @@ const FormSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { lab
 
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <div className="bg-gray-900 p-6 rounded-lg">
-        <h2 className="text-xl font-semibold text-white border-b border-gray-800 pb-4 mb-6">{title}</h2>
+    <div className="bg-gray-900/50 backdrop-blur-md border border-white/10 shadow-lg rounded-xl p-6">
+        <h2 className="text-xl font-semibold text-white border-b border-white/10 pb-4 mb-6">{title}</h2>
         <div className="space-y-4">
             {children}
         </div>
@@ -50,6 +50,13 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onUpdate
         phoneNumber: user.phoneNumber || '',
         country: user.country || COUNTRIES[0],
     });
+    const [socialLinks, setSocialLinks] = useState({
+        twitter: user.socialLinks?.twitter || '',
+        instagram: user.socialLinks?.instagram || '',
+        spotify: user.socialLinks?.spotify || '',
+        youtube: user.socialLinks?.youtube || '',
+        linkedin: user.socialLinks?.linkedin || '',
+    });
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
@@ -62,6 +69,10 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onUpdate
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+    
+    const handleSocialLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
     };
 
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,11 +101,10 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onUpdate
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        const updatedData: Partial<User> = {};
-        if (formData.name !== user.name) updatedData.name = formData.name;
-        if (formData.email !== user.email) updatedData.email = formData.email;
-        if (formData.phoneNumber !== (user.phoneNumber || '')) updatedData.phoneNumber = formData.phoneNumber;
-        if (formData.country !== (user.country || '')) updatedData.country = formData.country;
+        const updatedData: Partial<User> = {
+            ...formData,
+            socialLinks
+        };
         
         onUpdateProfile(updatedData, avatarFile ? avatarPreview : undefined);
 
@@ -115,7 +125,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onUpdate
             <button onClick={() => setView(dashboardView)} className="text-sm text-gray-400 hover:text-white mb-6">
                 &larr; Back to Dashboard
             </button>
-            <h1 className="text-3xl font-bold text-white mb-8">Profile Settings</h1>
+            <h1 className="text-3xl font-bold text-adaptive-white mb-8">Profile Settings</h1>
 
             {successMessage && (
                 <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg relative mb-6" role="alert">
@@ -127,7 +137,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onUpdate
                 <Section title="Profile Picture">
                     <div className="flex items-center gap-6">
                         <img src={avatarPreview} alt="Profile Avatar" className="w-24 h-24 rounded-full object-cover" />
-                        <label htmlFor="avatar-upload" className="cursor-pointer bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition-colors flex items-center gap-2">
+                        <label htmlFor="avatar-upload" className="cursor-pointer bg-gray-700/80 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-600/80 transition-colors flex items-center gap-2">
                            <CameraIcon className="w-4 h-4" />
                            Change Photo
                         </label>
@@ -144,6 +154,14 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onUpdate
                            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                         </FormSelect>
                     </div>
+                </Section>
+
+                <Section title="Social Links">
+                    <FormInput label="Twitter URL" id="twitter" name="twitter" value={socialLinks.twitter} onChange={handleSocialLinkChange} placeholder="https://twitter.com/username" />
+                    <FormInput label="Instagram URL" id="instagram" name="instagram" value={socialLinks.instagram} onChange={handleSocialLinkChange} placeholder="https://instagram.com/username" />
+                    <FormInput label="LinkedIn URL" id="linkedin" name="linkedin" value={socialLinks.linkedin} onChange={handleSocialLinkChange} placeholder="https://linkedin.com/in/username" />
+                    <FormInput label="Spotify URL" id="spotify" name="spotify" value={socialLinks.spotify} onChange={handleSocialLinkChange} placeholder="https://open.spotify.com/artist/..." />
+                    <FormInput label="YouTube URL" id="youtube" name="youtube" value={socialLinks.youtube} onChange={handleSocialLinkChange} placeholder="https://youtube.com/c/channelname" />
                 </Section>
                 
                 <Section title="Change Password">
